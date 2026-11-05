@@ -1,0 +1,83 @@
+// SQLite for local development. To move to PostgreSQL, change `provider` to
+// "postgresql", point DATABASE_URL at your server and run `npm run db:push`.
+// Nothing else in the schema is SQLite-specific.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Category {
+  UMRAH
+  INTERNATIONAL
+  DOMESTIC
+  LUXURY
+}
+
+enum BookingStatus {
+  PENDING // Awaiting payment in person at the agency
+  CONFIRMED // Paid at the agency and confirmed by staff
+  CANCELLED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  phone        String?
+  passwordHash String
+  role         Role      @default(USER)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+}
+
+model Destination {
+  id           String    @id @default(cuid())
+  content      Json // { ar, fr?, en? }, each with title, location, summary, description, included, excluded, itinerary
+  searchText   String // Normalized title, location and summary in every language (src/lib/trip-content.ts)
+  category     Category
+  price        Int // Per traveler, in whole Algerian dinars
+  durationDays Int
+  startDate    DateTime // First possible departure
+  endDate      DateTime // Last possible departure
+  capacity     Int // Total seats available across all bookings
+  images       Json // string[]
+  published    Boolean   @default(true)
+  featured     Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  bookings     Booking[]
+
+  @@index([published, category])
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  reference     String        @unique
+  userId        String
+  destinationId String
+  travelDate    DateTime
+  travelers     Int
+  totalPrice    Int // Snapshot, so later price edits never change an existing booking
+  status        BookingStatus @default(PENDING)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  user          User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  // Restrict: a destination with booking history cannot be deleted by accident.
+  destination   Destination   @relation(fields: [destinationId], references: [id], onDelete: Restrict)
+
+  @@index([status])
+  @@index([userId])
+  @@index([destinationId])
+}
