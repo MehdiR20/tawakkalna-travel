@@ -8,7 +8,7 @@ Built with Next.js (App Router), TypeScript, Tailwind CSS, Prisma, NextAuth (cre
 
 ```bash
 npm install
-cp .env.example .env     # then fill in NEXTAUTH_SECRET, ADMIN_EMAIL and ADMIN_PASSWORD
+cp .env.example .env     # then fill in the database URLs, NEXTAUTH_SECRET, ADMIN_EMAIL and ADMIN_PASSWORD
 npm run db:setup         # creates the database, the admin account and sample trips
 npm run dev
 ```
@@ -21,8 +21,11 @@ Open http://localhost:3100. Sign in with the `ADMIN_EMAIL` and `ADMIN_PASSWORD` 
 - Review the claims in the "Why us" section of the dictionaries in `src/i18n/`.
 - Have a native speaker proofread the Arabic and French text in `src/i18n/` and the sample trips.
 - Hero and sample trip photos are hotlinked from Unsplash. Consider hosting your own.
-- Move to PostgreSQL: change `provider` in `prisma/schema.prisma`, set `DATABASE_URL`, run `npm run db:push`, and add `mode: "insensitive"` to the `contains` searches in `src/app/admin/bookings/page.tsx` so they ignore case.
-- If running more than one server instance, replace the in-memory limiter in `src/lib/rate-limit.ts` with a shared store such as Redis.
+- Vercel runs several server instances, so replace the in-memory limiter in `src/lib/rate-limit.ts` with a shared store such as Redis.
+
+## Deployment
+
+Hosted on Vercel with PostgreSQL on Neon. Keep local development on its own database: `.env` must never point at production. Schema changes are applied with `npm run db:push`, using the URLs of the database you mean to change.
 
 ## How it's organized
 

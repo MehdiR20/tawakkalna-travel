@@ -26,10 +26,9 @@ const MAX_ATTEMPTS = 8;
 const RETRYABLE_CODES = new Set(["P2002", "P2034", "P2028", "P1008"]);
 
 /**
- * Runs bookings one at a time within this server process. SQLite locks the whole
- * file, so concurrent read-then-write transactions stall each other until they
- * time out. Across several server instances on PostgreSQL, the serializable
- * transaction and the retries below are what keep seat counts correct.
+ * Runs bookings one at a time within this server process, to avoid needless write
+ * conflicts. Across several server instances, the serializable transaction and the
+ * retries below are what keep seat counts correct.
  */
 let queue: Promise<unknown> = Promise.resolve();
 function inOrder<T>(task: () => Promise<T>): Promise<T> {

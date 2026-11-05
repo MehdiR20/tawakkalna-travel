@@ -1,14 +1,13 @@
-// SQLite for local development. To move to PostgreSQL, change `provider` to
-// "postgresql", point DATABASE_URL at your server and run `npm run db:push`.
-// Nothing else in the schema is SQLite-specific.
-
 generator client {
   provider = "prisma-client-js"
 }
 
+// DATABASE_URL is the pooled connection the app uses. Schema changes go through
+// the direct connection, because the pooler doesn't support them reliably.
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum Role {

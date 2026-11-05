@@ -25,14 +25,13 @@ export default async function AdminBookingsPage({
   const status = BOOKING_STATUSES.find((s) => s === params.status);
   const q = (typeof params.q === "string" ? params.q : "").trim().slice(0, 100);
 
-  // SQLite's LIKE ignores case. On PostgreSQL, add `mode: "insensitive"` to these.
   const where: Prisma.BookingWhereInput = {
     ...(status && { status }),
     ...(q && {
       OR: [
-        { reference: { contains: q } },
-        { user: { name: { contains: q } } },
-        { user: { email: { contains: q } } },
+        { reference: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+        { user: { email: { contains: q, mode: "insensitive" } } },
         { user: { phone: { contains: q } } },
       ],
     }),
